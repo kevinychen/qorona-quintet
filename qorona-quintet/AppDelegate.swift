@@ -26,11 +26,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, AVAudioRecorderDelegate {
             let readyResponse = json as! [String: Any]
             let musescoreUrl = readyResponse["musescoreUrl"] as! String
             let client = readyResponse["client"] as! String
-            self.runWithConfig(musescoreUrl: musescoreUrl, client: client)
+            let isHost = readyResponse["host"] as! Bool
+            self.runWithConfig(musescoreUrl: musescoreUrl, client: client, isHost: isHost)
         }
     }
     
-    func runWithConfig(musescoreUrl: String, client: String) {
+    func runWithConfig(musescoreUrl: String, client: String, isHost: Bool) {
         try! runScript(source: """
 display dialog "In Google Chrome, go to View -> Developer and ensure 'Allow JavaScript from Apple Events' is checked."
 
@@ -75,7 +76,7 @@ tell application "System Events"
     delay 2
 end tell
 """
-            .replacingOccurrences(of: "{{url}}", with: "https://musescore.com/user/31796599/scores/5560182")
+            .replacingOccurrences(of: "{{url}}", with: musescoreUrl)
         )
         
         switch AVCaptureDevice.authorizationStatus(for: .audio) {
@@ -110,7 +111,6 @@ end tell
         // sync time
         
         print(CACurrentMediaTime())
-        let isHost = true
         let toggleZoomRecordScript = """
 # start record on Zoom
 tell application "zoom.us" to activate

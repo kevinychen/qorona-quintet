@@ -24,6 +24,7 @@ public class Resource implements Service {
     public synchronized void setConfig(Config config) {
         LOGGER.info("Updating config: {}", config);
         currConfig = config;
+        latestHeartbeats.clear();
     }
 
     @Override
@@ -38,6 +39,7 @@ public class Resource implements Service {
                 latestHeartbeats.remove(client);
 
         UUID client = UUID.randomUUID();
+        boolean isHost = latestHeartbeats.isEmpty();
         latestHeartbeats.put(client, now);
 
         LOGGER.info("Clients: {}", latestHeartbeats);
@@ -46,7 +48,7 @@ public class Resource implements Service {
         else
             consensus = null;
 
-        return new ReadyResponse(currConfig.musescoreUrl, client);
+        return new ReadyResponse(currConfig.musescoreUrl, client, isHost);
     }
 
     @Override
