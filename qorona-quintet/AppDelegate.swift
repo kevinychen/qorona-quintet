@@ -103,6 +103,7 @@ end tell
         recorder.prepareToRecord()
 
         // sync time
+        
         print(CACurrentMediaTime())
         let firstSuccess = recorder.record()
         if firstSuccess == false || recorder.isRecording == false {
@@ -110,7 +111,7 @@ end tell
         }
         print(CACurrentMediaTime())
         
-        let countdown = 10
+        let countdown = 4
         let delay = 1000 // milliseconds
         try runScript(source: """
 # show countdown timer
@@ -135,8 +136,10 @@ end tell
         )
         print(CACurrentMediaTime())
         
-        sleep(5)
+        sleep(8)
         recorder.stop()
+        
+        NSWorkspace.shared.openFile(url.path)
 
         NSApplication.shared.terminate(self)
     }
