@@ -9,6 +9,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
@@ -34,7 +35,7 @@ public interface Service {
     @POST
     @Path("/ping/{clientId}")
     @Produces(MediaType.APPLICATION_JSON)
-    Consensus pingConsensus(@PathParam("clientId") UUID clientId);
+    Consensus pingConsensus(@PathParam("clientId") String clientId);
 
     @POST
     @Path("/ping")
@@ -42,12 +43,15 @@ public interface Service {
     DoneResponse pingDone();
 
     @POST
-    @Path("/upload/audio/{recordingId}/{clientId}")
+    @Path("/upload/audio/{clientId}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    void uploadAudio(
-            @PathParam("recordingId") UUID recordingId,
-            @PathParam("clientId") UUID clientId,
-            @FormDataParam("file") final InputStream audio) throws Exception;
+    void uploadAudio(@PathParam("clientId") UUID clientId, @FormDataParam("file") final InputStream audio) throws Exception;
+
+    @POST
+    @Path("/upload/video")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.TEXT_HTML)
+    Response uploadVideo(@FormDataParam("file") final InputStream audio) throws Exception;
 
     @Data
     public static class Config {
@@ -60,15 +64,14 @@ public interface Service {
     public static class ReadyResponse {
 
         final String musescoreUrl;
-        final UUID clientId;
+        final String clientId;
         final boolean master;
     }
 
     @Data
     public static class Consensus {
 
-        final UUID recordingId;
-        final long timestampEpochMillis;
+        final long startTimeEpochMillis;
     }
 
     @Data

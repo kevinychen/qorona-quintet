@@ -10,6 +10,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.ws.rs.core.Response;
+
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,16 +23,18 @@ public class Resource implements Service {
     private static final Logger LOGGER = LoggerFactory.getLogger(Resource.class);
 
     private volatile Config currConfig = new Config();
+    private volatile UUID recordingId = UUID.randomUUID();
     private volatile boolean done;
     private volatile Consensus consensus;
-    private Map<UUID, Instant> latestHeartbeats = new HashMap<>();
+    private Map<String, Instant> latestHeartbeats = new HashMap<>();
 
     @Override
     public synchronized void setConfig(Config config) {
         LOGGER.info("Updating config: {}", config);
         currConfig = config;
-        latestHeartbeats.clear();
+        recordingId = UUID.randomUUID();
         done = false;
+        latestHeartbeats.clear();
     }
 
     @Override
@@ -42,17 +46,17 @@ public class Resource implements Service {
     public synchronized ReadyResponse ready() {
         Instant now = Instant.now();
 
-        for (UUID clientId : new HashSet<>(latestHeartbeats.keySet()))
+        for (String clientId : new HashSet<>(latestHeartbeats.keySet()))
             if (latestHeartbeats.get(clientId).isBefore(now.minus(15, ChronoUnit.SECONDS)))
                 latestHeartbeats.remove(clientId);
 
-        UUID clientId = UUID.randomUUID();
+        String clientId = UUID.randomUUID().toString();
         boolean isMaster = latestHeartbeats.isEmpty();
         latestHeartbeats.put(clientId, now);
 
         LOGGER.info("Clients: {}", latestHeartbeats);
         if (latestHeartbeats.size() >= currConfig.numClients)
-            consensus = new Consensus(UUID.randomUUID(), now.plus(5, ChronoUnit.SECONDS).toEpochMilli());
+            consensus = new Consensus(now.plus(5, ChronoUnit.SECONDS).toEpochMilli());
         else
             consensus = null;
 
@@ -60,7 +64,7 @@ public class Resource implements Service {
     }
 
     @Override
-    public synchronized Consensus pingConsensus(UUID clientId) {
+    public synchronized Consensus pingConsensus(String clientId) {
         latestHeartbeats.put(clientId, Instant.now());
         return consensus;
     }
@@ -71,11 +75,17 @@ public class Resource implements Service {
     }
 
     @Override
-    public synchronized void uploadAudio(UUID recordingId, UUID clientId, InputStream audio) throws Exception {
-        upload(recordingId, clientId, audio, ".m4a");
+    public synchronized void uploadAudio(UUID clientId, InputStream audio) throws Exception {
+        upload(clientId.toString(), audio, ".m4a");
     }
 
-    private void upload(UUID recordingId, UUID clientId, InputStream data, String extension) throws Exception {
+    @Override
+    public synchronized Response uploadVideo(InputStream video) throws Exception {
+        upload("zoom", video, ".mp4");
+        return Response.ok(String.format("<html><body><a href='/recordings/%s.mp4'>Recording</a></body></html>", recordingId)).build();
+    }
+
+    private void upload(String clientId, InputStream data, String extension) throws Exception {
         File newFile = Paths.get("data", recordingId.toString(), clientId + extension).toFile();
         FileUtils.copyInputStreamToFile(data, newFile);
 
@@ -91,26 +101,29 @@ public class Resource implements Service {
                     Files.copy(file, destFile);
                 } else {
                     Files.copy(destFile, tempFile);
-                    int status = Runtime.getRuntime().exec(new String[] {
+                    int statusCode = Runtime.getRuntime().exec(new String[] {
                             "/bin/sh",
                             "-c",
                             // https://stackoverflow.com/questions/14498539/how-to-overlay-downmix-two-audio-files-using-ffmpeg
                             String.format("yes | /usr/local/bin/ffmpeg -i %s -i %s -filter_complex amerge=inputs=2 -ac 2 %s",
                                 tempFile.getAbsolutePath(), file.getAbsolutePath(), destFile.getAbsolutePath()),
                     }).waitFor();
-                    System.out.println(status);
+                    if (statusCode != 0)
+                        throw new IllegalStateException("ffmpeg threw error code " + statusCode);
                 }
 
         File outputFile = Paths.get("src", "main", "resources", "public", "recordings", recordingId + ".mp4").toFile();
         for (File file : files)
-            if (file.getName().endsWith(".mp4")) {
-                Runtime.getRuntime().exec(new String[] {
+            if (file.getName().endsWith(".mp4") && destFile.exists()) {
+                int statusCode = Runtime.getRuntime().exec(new String[] {
                         "/bin/sh",
                         "-c",
                         // https://video.stackexchange.com/questions/11898/merge-mp4-with-m4a
                         String.format("yes | /usr/local/bin/ffmpeg -i %s -i %s -c:v copy -map 0:v:0 -map 1:a:0 %s",
-                            destFile.getAbsolutePath(), file.getAbsolutePath(), outputFile.getAbsolutePath()),
+                            file.getAbsolutePath(), destFile.getAbsolutePath(), outputFile.getAbsolutePath()),
                 }).waitFor();
+                if (statusCode != 0)
+                    throw new IllegalStateException("ffmpeg threw error code " + statusCode);
             }
     }
 }

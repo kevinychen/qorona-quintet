@@ -55,10 +55,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let consensus = json as! [String: Any]
             self.recordingId = consensus["recordingId"] as? String
             
-            let timestampEpochMillis = consensus["timestampEpochMillis"] as! Int64
+            let startTimeEpochMillis = consensus["startTimeEpochMillis"] as! Int64
             let currentEpochMillis = Int64(((self.ntpClient.referenceTime?.now().timeIntervalSince1970)! * 1000.0).rounded())
-            let waitMillis = Int(timestampEpochMillis - currentEpochMillis)
-            print("Current time: \(currentEpochMillis). Consensus time: \(timestampEpochMillis). Wait time: \(waitMillis)")
+            let waitMillis = Int(startTimeEpochMillis - currentEpochMillis)
+            print("Current time: \(currentEpochMillis). Start time: \(startTimeEpochMillis). Wait time: \(waitMillis)")
             DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(waitMillis)) {
                 self.run()
             }

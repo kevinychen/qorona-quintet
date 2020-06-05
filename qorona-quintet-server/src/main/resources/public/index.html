@@ -22,6 +22,11 @@
       <div>
         <input id="submit-done" type="button" value="Set done">
       </div>
+      <form action="/api/upload/video" method="post" enctype="multipart/form-data">
+        Select image to upload:
+        <input type="file" name="file">
+        <input type="submit" value="Upload Zoom recording" name="submit">
+      </form>
     </div>
     <script>
       document.querySelectorAll('input').forEach(function(el) {
