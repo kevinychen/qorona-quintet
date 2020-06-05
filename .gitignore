@@ -4,4 +4,6 @@
 .settings
 bin
 build
+data
+recordings
 xcuserdata

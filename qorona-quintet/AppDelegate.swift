@@ -78,7 +78,7 @@ end tell
 """
             .replacingOccurrences(of: "{{url}}", with: musescoreUrl)
         )
-        
+
         switch AVCaptureDevice.authorizationStatus(for: .audio) {
         case .authorized: // The user has previously granted access to the camera.
             ()
@@ -111,19 +111,7 @@ end tell
         // sync time
         
         print(CACurrentMediaTime())
-        let toggleZoomRecordScript = """
-# start record on Zoom
-tell application "zoom.us" to activate
-tell application "System Events"
-    {{command}}
-end tell
-"""
-            .replacingOccurrences(of: "{{command}}", with: isHost
-                ? "keystroke \"r\" using { shift down, command down }"
-                : "keystroke \"~\"" // dummy no-op command so non-hosts go through the same (approximate) delay
-        )
-        try! runScript(source: toggleZoomRecordScript)
-        
+        toggleZoomRecord(isHost: isHost)
         print(CACurrentMediaTime())
         let firstSuccess = recorder.record()
         if firstSuccess == false || recorder.isRecording == false {
@@ -158,11 +146,13 @@ end tell
         
         sleep(8)
         recorder.stop()
-        try! runScript(source: toggleZoomRecordScript)
+        toggleZoomRecord(isHost: isHost)
         
-        NSWorkspace.shared.openFile(url.path)
-
-        NSApplication.shared.terminate(self)
+        let recordingId = "00000000-0000-0000-0000-00000000000"
+        let client = "00000000-0000-0000-0000-00000000000"
+        uploadFile(url: SERVER + "/api/upload/audio/\(recordingId)/\(client)", fileUrl: url, contentType: "audio/mp4") { () in
+            NSApplication.shared.terminate(self)
+        }
     }
     
     func postUrl(url: String, callback: @escaping (Any) -> ()) {
@@ -182,6 +172,65 @@ end tell
         task.resume()
     }
     
+    func uploadFile(url: String, fileUrl: URL, contentType: String, callback: @escaping () -> Void) {
+        var request: URLRequest = URLRequest(url: URL(string: url)!)
+        request.httpMethod = "POST"
+        
+        let boundary = "Boundary-\(NSUUID().uuidString)"
+        request.setValue("multipart/form-data; boundary=" + boundary, forHTTPHeaderField: "Content-Type")
+        
+        let data = try! Data(contentsOf: fileUrl)
+        let fullData = toFormData(data: data, boundary: boundary, fileName: "name", contentType: contentType)
+        request.setValue(String(fullData.count), forHTTPHeaderField: "Content-Length")
+        
+        request.httpBody = fullData
+        request.httpShouldHandleCookies = false
+        
+        let session = URLSession(configuration: .default)
+        let task = session.dataTask(with: request) { (data, response, error) in
+            callback()
+        }
+        task.resume()
+    }
+    
+    func toFormData(data: Data, boundary: String, fileName: String, contentType: String) -> Data {
+        var fullData = Data()
+        
+        let lineOne = "--" + boundary + "\r\n"
+        fullData.append(lineOne.data(using: String.Encoding.utf8, allowLossyConversion: false)!)
+        
+        let lineTwo = "Content-Disposition: form-data; name=\"file\"; filename=\"" + fileName + "\"\r\n"
+        fullData.append(lineTwo.data(using: String.Encoding.utf8, allowLossyConversion: false)!)
+        
+        let lineThree = "Content-Type: \(contentType)\r\n\r\n"
+        fullData.append(lineThree.data(using: String.Encoding.utf8, allowLossyConversion: false)!)
+        
+        fullData.append(data)
+        
+        let lineFive = "\r\n"
+        fullData.append(lineFive.data(using: String.Encoding.utf8, allowLossyConversion: false)!)
+        
+        let lineSix = "--" + boundary + "--\r\n"
+        fullData.append(lineSix.data(using: String.Encoding.utf8, allowLossyConversion: false)!)
+        
+        return fullData
+    }
+    
+    func toggleZoomRecord(isHost: Bool) {
+        if (isHost) {
+            try! runScript(source: """
+# start record on Zoom
+tell application "zoom.us" to activate
+tell application "System Events"
+    keystroke "r" using { shift down, command down }
+end tell
+"""
+            )
+        } else {
+            sleep(100) // dummy delay that takes roughly the same amount of time
+        }
+    }
+
     func runScript(source: String) throws {
         let script = NSAppleScript(source: source)!
         var error: NSDictionary? = nil

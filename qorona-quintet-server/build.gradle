@@ -17,9 +17,11 @@ dependencies {
     compileOnly "org.projectlombok:lombok:1.18.12"
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
 
+    implementation "commons-io:commons-io:2.7"
     implementation "io.dropwizard:dropwizard-assets:1.2.1"
     implementation "javax.activation:activation:1.1.1"
     implementation "javax.xml.bind:jaxb-api:2.2.11"
+    implementation "org.glassfish.jersey.media:jersey-media-multipart:2.25.1"
 
     testImplementation "junit:junit:4.12"
     testImplementation "org.assertj:assertj-core:3.11.0"
