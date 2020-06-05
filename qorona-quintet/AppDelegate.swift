@@ -18,7 +18,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     var musescoreUrl: String!
     var client: String!
-    var isHost: Bool!
+    var isMaster: Bool!
     var recorder: Recorder!
     var recordingId: String!
 
@@ -27,7 +27,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let readyResponse = json as! [String: Any]
             self.musescoreUrl = readyResponse["musescoreUrl"] as? String
             self.client = readyResponse["client"] as? String
-            self.isHost = readyResponse["host"] as? Bool
+            self.isMaster = readyResponse["master"] as? Bool
             self.prepare()
         }
     }
@@ -58,7 +58,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func run() {
         print("Starting Zoom recording at \(CACurrentMediaTime())")
-        toggleZoomRecordIfHost()
+        toggleZoomRecordIfMaster()
         
         print("Starting audio recording at \(CACurrentMediaTime())")
         recorder.record()
@@ -88,15 +88,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func done() {
         recorder.stop()
-        toggleZoomRecordIfHost()
+        toggleZoomRecordIfMaster()
         exitChromeFullscreen()
         uploadFile(url: SERVER + "/api/upload/audio/\(recordingId!)/\(client!)", fileUrl: recorder.url(), contentType: "audio/mp4") { () in
             NSApplication.shared.terminate(self)
         }
     }
 
-    private func toggleZoomRecordIfHost() {
-        if (isHost) {
+    private func toggleZoomRecordIfMaster() {
+        if (isMaster) {
             toggleZoomRecord()
         } else {
             sleep(100) // dummy delay that takes roughly the same amount of time

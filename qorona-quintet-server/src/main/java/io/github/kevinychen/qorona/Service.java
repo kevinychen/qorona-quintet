@@ -60,7 +60,7 @@ public interface Service {
 
         final String musescoreUrl;
         final UUID client;
-        final boolean host;
+        final boolean master;
     }
 
     @Data

@@ -47,7 +47,7 @@ public class Resource implements Service {
                 latestHeartbeats.remove(client);
 
         UUID client = UUID.randomUUID();
-        boolean isHost = latestHeartbeats.isEmpty();
+        boolean isMaster = latestHeartbeats.isEmpty();
         latestHeartbeats.put(client, now);
 
         LOGGER.info("Clients: {}", latestHeartbeats);
@@ -56,7 +56,7 @@ public class Resource implements Service {
         else
             consensus = null;
 
-        return new ReadyResponse(currConfig.musescoreUrl, client, isHost);
+        return new ReadyResponse(currConfig.musescoreUrl, client, isMaster);
     }
 
     @Override
