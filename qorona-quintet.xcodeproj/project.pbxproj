@@ -7,12 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		84019C25248A0544001DD273 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84019C24248A0544001DD273 /* Utils.swift */; };
+		84019C27248A066C001DD273 /* Applescripts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84019C26248A066C001DD273 /* Applescripts.swift */; };
+		84019C29248A0A06001DD273 /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84019C28248A0A06001DD273 /* Recorder.swift */; };
 		849034EA2484615200AEB52A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849034E92484615200AEB52A /* AppDelegate.swift */; };
 		849034EC2484615200AEB52A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 849034EB2484615200AEB52A /* Assets.xcassets */; };
 		849034EF2484615200AEB52A /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 849034ED2484615200AEB52A /* MainMenu.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		84019C24248A0544001DD273 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		84019C26248A066C001DD273 /* Applescripts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Applescripts.swift; sourceTree = "<group>"; };
+		84019C28248A0A06001DD273 /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
 		849034E62484615200AEB52A /* qorona-quintet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "qorona-quintet.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		849034E92484615200AEB52A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		849034EB2484615200AEB52A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -52,6 +58,9 @@
 			isa = PBXGroup;
 			children = (
 				849034E92484615200AEB52A /* AppDelegate.swift */,
+				84019C24248A0544001DD273 /* Utils.swift */,
+				84019C26248A066C001DD273 /* Applescripts.swift */,
+				84019C28248A0A06001DD273 /* Recorder.swift */,
 				849034EB2484615200AEB52A /* Assets.xcassets */,
 				849034ED2484615200AEB52A /* MainMenu.xib */,
 				849034F02484615200AEB52A /* Info.plist */,
@@ -130,7 +139,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				84019C27248A066C001DD273 /* Applescripts.swift in Sources */,
+				84019C25248A0544001DD273 /* Utils.swift in Sources */,
 				849034EA2484615200AEB52A /* AppDelegate.swift in Sources */,
+				84019C29248A0A06001DD273 /* Recorder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
