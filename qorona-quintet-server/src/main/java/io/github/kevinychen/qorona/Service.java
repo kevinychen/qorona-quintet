@@ -24,6 +24,10 @@ public interface Service {
     void setConfig(Config config);
 
     @POST
+    @Path("/done")
+    void setDone();
+
+    @POST
     @Path("/ready")
     @Produces(MediaType.APPLICATION_JSON)
     ReadyResponse ready();
@@ -34,6 +38,11 @@ public interface Service {
     Consensus pingConsensus(@PathParam("client") UUID client);
 
     @POST
+    @Path("/ping")
+    @Produces(MediaType.APPLICATION_JSON)
+    DoneResponse pingDone();
+
+    @POST
     @Path("/upload/audio/{recordingId}/{client}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     void uploadAudio(@PathParam("recordingId") UUID recordingId, @PathParam("client") UUID client, @FormDataParam("file") final InputStream audio)
@@ -42,8 +51,8 @@ public interface Service {
     @Data
     public static class Config {
 
-        int numClients;
-        String musescoreUrl;
+        int numClients = 2;
+        String musescoreUrl = "https://musescore.com/user/31796599/scores/5560182";
     }
 
     @Data
@@ -60,5 +69,11 @@ public interface Service {
         final UUID recordingId;
         final Set<UUID> clients;
         final long timestampEpochMillis;
+    }
+
+    @Data
+    public static class DoneResponse {
+
+        final boolean done;
     }
 }

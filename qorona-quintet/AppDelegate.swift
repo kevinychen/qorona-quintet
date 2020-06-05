@@ -10,13 +10,14 @@ import AVFoundation
 import Cocoa
 import os.log
 
+let SERVER = "http://localhost:8080"
+
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, AVAudioRecorderDelegate {
     
     @IBOutlet weak var window: NSWindow!
     
-    let SERVER = "http://localhost:8080"
-    
+
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         start()
     }
@@ -162,34 +163,53 @@ end tell
         )
         print("Started MuseScore at \(CACurrentMediaTime())")
         
-        sleep(8)
+        waitForDone(client: client, isHost: isHost, fileUrl: fileUrl, recorder: recorder, recordingId: recordingId)
+    }
+    
+    func waitForDone(client: String, isHost: Bool, fileUrl: URL, recorder: AVAudioRecorder, recordingId: String) {
+        postUrl(url: SERVER + "/api/ping/") { json in
+            let doneResponse = json as! [String: Bool]
+            let done = doneResponse["done"]!
+            if !done {
+                print("Not done yet. Polling again after 1 second.")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    self.waitForDone(client: client, isHost: isHost, fileUrl: fileUrl, recorder: recorder, recordingId: recordingId)
+                }
+                return
+            }
+            print("Done! Finishing and uploading recording.")
+            self.done(client: client, isHost: isHost, fileUrl: fileUrl, recorder: recorder, recordingId: recordingId)
+        }
+    }
+    
+    func done(client: String, isHost: Bool, fileUrl: URL, recorder: AVAudioRecorder, recordingId: String) {
         recorder.stop()
         toggleZoomRecord(isHost: isHost)
-        
-        //let recordingId = "00000000-0000-0000-0000-00000000000"
-        //let client = "00000000-0000-0000-0000-00000000000"
+        try! runScript(source: """
+# escape to exit fullscreen
+tell application "Google Chrome"
+    activate
+end tell
+
+tell application "System Events" to key code 53
+"""
+        )
         uploadFile(url: SERVER + "/api/upload/audio/\(recordingId)/\(client)", fileUrl: fileUrl, contentType: "audio/mp4") { () in
             NSApplication.shared.terminate(self)
         }
     }
-    
+
     private func postUrl(url: String, callback: @escaping (Any?) -> ()) {
         var request = URLRequest(url: URL(string: url)!)
         request.httpMethod = "POST"
         
         let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
-            if let httpResponse = response as? HTTPURLResponse {
-                if httpResponse.statusCode == 503 {
-                    print("HTTP 503")
-                    return
-                }
-                if data!.isEmpty {
-                    callback(nil)
-                    return
-                }
-                let json = try! JSONSerialization.jsonObject(with: data!, options: [])
-                callback(json)
+            if data!.isEmpty {
+                callback(nil)
+                return
             }
+            let json = try! JSONSerialization.jsonObject(with: data!, options: [])
+            callback(json)
         }
         task.resume()
     }

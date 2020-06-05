@@ -10,8 +10,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.ws.rs.ServiceUnavailableException;
-
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +20,8 @@ public class Resource implements Service {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Resource.class);
 
-    private volatile Config currConfig;
+    private volatile Config currConfig = new Config();
+    private volatile boolean done;
     private volatile Consensus consensus;
     private Map<UUID, Instant> latestHeartbeats = new HashMap<>();
 
@@ -31,13 +30,16 @@ public class Resource implements Service {
         LOGGER.info("Updating config: {}", config);
         currConfig = config;
         latestHeartbeats.clear();
+        done = false;
+    }
+
+    @Override
+    public synchronized void setDone() {
+        done = true;
     }
 
     @Override
     public synchronized ReadyResponse ready() {
-        if (currConfig == null)
-            throw new ServiceUnavailableException();
-
         Instant now = Instant.now();
 
         for (UUID client : new HashSet<>(latestHeartbeats.keySet()))
@@ -61,6 +63,11 @@ public class Resource implements Service {
     public synchronized Consensus pingConsensus(UUID client) {
         latestHeartbeats.put(client, Instant.now());
         return consensus;
+    }
+
+    @Override
+    public synchronized DoneResponse pingDone() {
+        return new DoneResponse(done);
     }
 
     @Override

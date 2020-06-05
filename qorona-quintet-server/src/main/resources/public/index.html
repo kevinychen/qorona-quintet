@@ -19,6 +19,9 @@
       <div>
         <input id="submit-config" type="button" value="Update config">
       </div>
+      <div>
+        <input id="submit-done" type="button" value="Set done">
+      </div>
     </div>
     <script>
       document.querySelectorAll('input').forEach(function(el) {
@@ -37,6 +40,15 @@
           headers: { 'Content-type': 'application/json' },
         }).then(response => {
           document.getElementById('submit-config').value = 'Updated';
+          document.getElementById('submit-done').value = 'Set done';
+        });
+      };
+      document.getElementById('submit-done').onclick = function() {
+        document.getElementById('submit-done').value = 'Updating...';
+        fetch('/api/done', {
+          method: 'POST',
+        }).then(response => {
+          document.getElementById('submit-done').value = 'Done';
         });
       };
     </script>
