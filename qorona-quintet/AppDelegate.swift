@@ -105,6 +105,21 @@ end tell
         // sync time
         
         print(CACurrentMediaTime())
+        let isHost = true
+        let toggleZoomRecordScript = """
+# start record on Zoom
+tell application "zoom.us" to activate
+tell application "System Events"
+    {{command}}
+end tell
+"""
+            .replacingOccurrences(of: "{{command}}", with: isHost
+                ? "keystroke \"r\" using { shift down, command down }"
+                : "keystroke \"~\"" // dummy no-op command so non-hosts go through the same (approximate) delay
+        )
+        try runScript(source: toggleZoomRecordScript)
+        
+        print(CACurrentMediaTime())
         let firstSuccess = recorder.record()
         if firstSuccess == false || recorder.isRecording == false {
             recorder.record()
@@ -138,6 +153,7 @@ end tell
         
         sleep(8)
         recorder.stop()
+        try runScript(source: toggleZoomRecordScript)
         
         NSWorkspace.shared.openFile(url.path)
 
