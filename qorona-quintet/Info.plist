@@ -32,5 +32,10 @@
 	<string>Automatically open and start MuseScore music</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Record from your computer</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 </dict>
 </plist>

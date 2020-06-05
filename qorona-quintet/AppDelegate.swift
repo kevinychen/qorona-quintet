@@ -9,24 +9,29 @@
 import AVFoundation
 import Cocoa
 import os.log
-import QuartzCore
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, AVAudioRecorderDelegate {
     
     @IBOutlet weak var window: NSWindow!
     
+    let SERVER = "http://localhost:8080"
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        do {
-            try run()
-        } catch {
-            print(error)
+        run()
+    }
+    
+    func run() {
+        postUrl(url: SERVER + "/api/ready") { json in
+            let readyResponse = json as! [String: Any]
+            let musescoreUrl = readyResponse["musescoreUrl"] as! String
+            let client = readyResponse["client"] as! String
+            self.runWithConfig(musescoreUrl: musescoreUrl, client: client)
         }
     }
     
-    func run() throws {
-        try runScript(source: """
+    func runWithConfig(musescoreUrl: String, client: String) {
+        try! runScript(source: """
 display dialog "In Google Chrome, go to View -> Developer and ensure 'Allow JavaScript from Apple Events' is checked."
 
 tell application "Google Chrome"
@@ -98,7 +103,7 @@ end tell
             AVNumberOfChannelsKey: 1,
             AVLinearPCMBitDepthKey: 16,
             ])!
-        let recorder = try AVAudioRecorder(url: url as URL, format: format)
+        let recorder = try! AVAudioRecorder(url: url as URL, format: format)
         recorder.delegate = self
         recorder.prepareToRecord()
 
@@ -117,7 +122,7 @@ end tell
                 ? "keystroke \"r\" using { shift down, command down }"
                 : "keystroke \"~\"" // dummy no-op command so non-hosts go through the same (approximate) delay
         )
-        try runScript(source: toggleZoomRecordScript)
+        try! runScript(source: toggleZoomRecordScript)
         
         print(CACurrentMediaTime())
         let firstSuccess = recorder.record()
@@ -128,7 +133,7 @@ end tell
         
         let countdown = 4
         let delay = 1000 // milliseconds
-        try runScript(source: """
+        try! runScript(source: """
 # show countdown timer
 tell application "Google Chrome"
     tell active tab of window 1
@@ -153,11 +158,28 @@ end tell
         
         sleep(8)
         recorder.stop()
-        try runScript(source: toggleZoomRecordScript)
+        try! runScript(source: toggleZoomRecordScript)
         
         NSWorkspace.shared.openFile(url.path)
 
         NSApplication.shared.terminate(self)
+    }
+    
+    func postUrl(url: String, callback: @escaping (Any) -> ()) {
+        var request = URLRequest(url: URL(string: url)!)
+        request.httpMethod = "POST"
+        
+        let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
+            if let httpResponse = response as? HTTPURLResponse {
+                if httpResponse.statusCode == 503 {
+                    print("No music configured yet.")
+                    return
+                }
+                let json = try! JSONSerialization.jsonObject(with: data!, options: [])
+                callback(json)
+            }
+        }
+        task.resume()
     }
     
     func runScript(source: String) throws {

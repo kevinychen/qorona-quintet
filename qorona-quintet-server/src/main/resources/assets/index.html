@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="Qorona Quintet" />
+    <title>Qorona Quintet</title>
+  </head>
+  <body>
+    <div id="root">
+      <div>
+        # clients: <input id="input-num-clients" type="number" />
+      </div>
+      <div>
+        URL: <input id="input-url" type="text" />
+      </div>
+      <div>
+        <input id="submit-config" type="button" value="Update config">
+      </div>
+    </div>
+    <script>
+      document.querySelectorAll('input').forEach(function(el) {
+        el.oninput = function() {
+          document.getElementById('submit-config').value = 'Update config';
+        };
+      });
+      document.getElementById('submit-config').onclick = function() {
+        document.getElementById('submit-config').value = 'Updating...';
+        fetch('/api/config', {
+          method: 'POST',
+          body: JSON.stringify({
+            numClients: parseInt(document.getElementById('input-num-clients').value),
+            musescoreUrl: document.getElementById('input-url').value,
+          }),
+          headers: { 'Content-type': 'application/json' },
+        }).then(response => {
+          document.getElementById('submit-config').value = 'Updated';
+        });
+      };
+    </script>
+  </body>
+</html>
