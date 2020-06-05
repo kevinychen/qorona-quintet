@@ -41,7 +41,7 @@ public class Resource implements Service {
         Instant now = Instant.now();
 
         for (UUID client : new HashSet<>(latestHeartbeats.keySet()))
-            if (latestHeartbeats.get(client).isBefore(now.minus(5, ChronoUnit.SECONDS)))
+            if (latestHeartbeats.get(client).isBefore(now.minus(15, ChronoUnit.SECONDS)))
                 latestHeartbeats.remove(client);
 
         UUID client = UUID.randomUUID();

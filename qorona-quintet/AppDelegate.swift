@@ -18,23 +18,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, AVAudioRecorderDelegate {
     let SERVER = "http://localhost:8080"
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        run()
+        start()
     }
     
-    func run() {
+    func start() {
         postUrl(url: SERVER + "/api/ready") { json in
             let readyResponse = json as! [String: Any]
             let musescoreUrl = readyResponse["musescoreUrl"] as! String
             let client = readyResponse["client"] as! String
             let isHost = readyResponse["host"] as! Bool
-            self.runWithConfig(musescoreUrl: musescoreUrl, client: client, isHost: isHost)
+            self.prepare(musescoreUrl: musescoreUrl, client: client, isHost: isHost)
         }
     }
     
-    func runWithConfig(musescoreUrl: String, client: String, isHost: Bool) {
+    func prepare(musescoreUrl: String, client: String, isHost: Bool) {
         try! runScript(source: """
-display dialog "In Google Chrome, go to View -> Developer and ensure 'Allow JavaScript from Apple Events' is checked."
-
 tell application "Google Chrome"
     activate
     tell window 1
@@ -95,8 +93,8 @@ end tell
         @unknown default:
             fatalError()
         }
-        let url = NSURL.fileURL(withPathComponents: [NSTemporaryDirectory(), "recording.m4a"])!
-        print(url)
+        let fileUrl = NSURL.fileURL(withPathComponents: [NSTemporaryDirectory(), "recording.m4a"])!
+        print("Recording file: \(fileUrl)")
         let format = AVAudioFormat(settings: [
             AVFormatIDKey: kAudioFormatMPEG4AAC,
             AVEncoderAudioQualityKey: AVAudioQuality.high,
@@ -104,20 +102,40 @@ end tell
             AVNumberOfChannelsKey: 1,
             AVLinearPCMBitDepthKey: 16,
             ])!
-        let recorder = try! AVAudioRecorder(url: url as URL, format: format)
+        let recorder = try! AVAudioRecorder(url: fileUrl, format: format)
         recorder.delegate = self
         recorder.prepareToRecord()
-
-        // sync time
         
-        print(CACurrentMediaTime())
+        waitForConsensus(client: client, isHost: isHost, fileUrl: fileUrl, recorder: recorder)
+    }
+    
+    func waitForConsensus(client: String, isHost: Bool, fileUrl: URL, recorder: AVAudioRecorder) {
+        postUrl(url: SERVER + "/api/ping/\(client)") { json in
+            if (json == nil) {
+                print("No consensus. Polling again after 1 second.")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    self.waitForConsensus(client: client, isHost: isHost, fileUrl: fileUrl, recorder: recorder)
+                }
+                return
+            }
+            let consensus = json as! [String: Any]
+            let recordingId = consensus["recordingId"] as! String
+            let timestampEpochMillis = consensus["timestampEpochMillis"] as! Int64
+            print("Got consensus at \(timestampEpochMillis)")
+            // TODO wait until timestampEpochMillis
+            self.run(client: client, isHost: isHost, fileUrl: fileUrl, recorder: recorder, recordingId: recordingId)
+        }
+    }
+    
+    func run(client: String, isHost: Bool, fileUrl: URL, recorder: AVAudioRecorder, recordingId: String) {
+        print("Starting Zoom recording at \(CACurrentMediaTime())")
         toggleZoomRecord(isHost: isHost)
-        print(CACurrentMediaTime())
+        print("Starting audio recording at \(CACurrentMediaTime())")
         let firstSuccess = recorder.record()
         if firstSuccess == false || recorder.isRecording == false {
             recorder.record()
         }
-        print(CACurrentMediaTime())
+        print("Starting countdown at \(CACurrentMediaTime())")
         
         let countdown = 4
         let delay = 1000 // milliseconds
@@ -142,27 +160,31 @@ end tell
             .replacingOccurrences(of: "{{delay}}", with: String(delay))
             .replacingOccurrences(of: "{{total_delay}}", with: String(countdown * delay / 1000))
         )
-        print(CACurrentMediaTime())
+        print("Started MuseScore at \(CACurrentMediaTime())")
         
         sleep(8)
         recorder.stop()
         toggleZoomRecord(isHost: isHost)
         
-        let recordingId = "00000000-0000-0000-0000-00000000000"
-        let client = "00000000-0000-0000-0000-00000000000"
-        uploadFile(url: SERVER + "/api/upload/audio/\(recordingId)/\(client)", fileUrl: url, contentType: "audio/mp4") { () in
+        //let recordingId = "00000000-0000-0000-0000-00000000000"
+        //let client = "00000000-0000-0000-0000-00000000000"
+        uploadFile(url: SERVER + "/api/upload/audio/\(recordingId)/\(client)", fileUrl: fileUrl, contentType: "audio/mp4") { () in
             NSApplication.shared.terminate(self)
         }
     }
     
-    func postUrl(url: String, callback: @escaping (Any) -> ()) {
+    private func postUrl(url: String, callback: @escaping (Any?) -> ()) {
         var request = URLRequest(url: URL(string: url)!)
         request.httpMethod = "POST"
         
         let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
             if let httpResponse = response as? HTTPURLResponse {
                 if httpResponse.statusCode == 503 {
-                    print("No music configured yet.")
+                    print("HTTP 503")
+                    return
+                }
+                if data!.isEmpty {
+                    callback(nil)
                     return
                 }
                 let json = try! JSONSerialization.jsonObject(with: data!, options: [])
@@ -172,7 +194,7 @@ end tell
         task.resume()
     }
     
-    func uploadFile(url: String, fileUrl: URL, contentType: String, callback: @escaping () -> Void) {
+    private func uploadFile(url: String, fileUrl: URL, contentType: String, callback: @escaping () -> Void) {
         var request: URLRequest = URLRequest(url: URL(string: url)!)
         request.httpMethod = "POST"
         
@@ -193,7 +215,7 @@ end tell
         task.resume()
     }
     
-    func toFormData(data: Data, boundary: String, fileName: String, contentType: String) -> Data {
+    private func toFormData(data: Data, boundary: String, fileName: String, contentType: String) -> Data {
         var fullData = Data()
         
         let lineOne = "--" + boundary + "\r\n"
@@ -216,7 +238,7 @@ end tell
         return fullData
     }
     
-    func toggleZoomRecord(isHost: Bool) {
+    private func toggleZoomRecord(isHost: Bool) {
         if (isHost) {
             try! runScript(source: """
 # start record on Zoom
@@ -231,7 +253,7 @@ end tell
         }
     }
 
-    func runScript(source: String) throws {
+    private func runScript(source: String) throws {
         let script = NSAppleScript(source: source)!
         var error: NSDictionary? = nil
         script.executeAndReturnError(&error)
@@ -242,14 +264,5 @@ end tell
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
-        // Insert code here to tear down your application
-    }
-    
-    func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
-        print(flag)
-    }
-    
-    func audioRecorderEncodeErrorDidOccur(_ recorder: AVAudioRecorder, error: Error?) {
-        print(error)
     }
 }
