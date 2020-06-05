@@ -56,23 +56,19 @@ tell application "Google Chrome"
         execute javascript "document.querySelectorAll('._13vRI._1ci-r._3qfU_._3ysVT._1Us9e.Hj1bK._8B-BO._15kzJ')[1].click()"
         # rewind
         execute javascript "document.querySelectorAll('._13vRI._1ci-r._3qfU_._3ysVT._1Us9e.Hj1bK._8B-BO._15kzJ')[0].click()"
+        # add keyboard listener for fullscreen
+        execute javascript "document.onkeypress = e => { if (e.key === '~') document.querySelector('._15eP_').requestFullscreen() }"
     end tell
+
+    delay 1
 end tell
 
+# invoke fullscreen
 tell application "System Events"
-    # fullscreen
-    keystroke "f" using { command down, control down }
-end tell
-
-tell application "Google Chrome"
-    # fullscreen formatting
-    tell newTab
-        execute javascript "document.querySelectorAll('._13vRI._1ci-r._3qfU_._3ysVT._1Us9e.Hj1bK._8B-BO._15kzJ')[8].click()"
-    end tell
+    keystroke "~"
 
     delay 2
 end tell
-
 """
             .replacingOccurrences(of: "{{url}}", with: "https://musescore.com/user/31796599/scores/5560182")
         )
@@ -113,15 +109,29 @@ end tell
             recorder.record()
         }
         print(CACurrentMediaTime())
-        sleep(2)
-        print(CACurrentMediaTime())
+        
+        let countdown = 10
+        let delay = 1000 // milliseconds
         try runScript(source: """
+# show countdown timer
+tell application "Google Chrome"
+    tell active tab of window 1
+        execute javascript "document.querySelector('._15eP_').insertAdjacentHTML('beforeend', \\"<style>#qorona-quintet { position: fixed; top: 40%; width: 100vw; pointer-events: none; font-size: 200px; text-align: center; }</style> <div id='qorona-quintet'></div>\\"); let qorona_quintet_countdown = {{countdown}}; let qorona_quintet_interval = window.setInterval(function() { qorona_quintet_countdown--; if (qorona_quintet_countdown === 0) { window.clearInterval(qorona_quintet_interval); } document.getElementById('qorona-quintet').textContent = qorona_quintet_countdown || ''; }, {{delay}});"
+    end tell
+end tell
+
+delay {{total_delay}}
+
+# play
 tell application "Google Chrome"
     tell active tab of window 1
         execute javascript "document.querySelectorAll('._13vRI._1ci-r._3qfU_._3ysVT._1Us9e.Hj1bK._8B-BO._15kzJ')[1].click()"
     end tell
 end tell
 """
+            .replacingOccurrences(of: "{{countdown}}", with: String(countdown))
+            .replacingOccurrences(of: "{{delay}}", with: String(delay))
+            .replacingOccurrences(of: "{{total_delay}}", with: String(countdown * delay / 1000))
         )
         print(CACurrentMediaTime())
         
