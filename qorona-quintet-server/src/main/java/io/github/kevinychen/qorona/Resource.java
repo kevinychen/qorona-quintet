@@ -42,26 +42,26 @@ public class Resource implements Service {
     public synchronized ReadyResponse ready() {
         Instant now = Instant.now();
 
-        for (UUID client : new HashSet<>(latestHeartbeats.keySet()))
-            if (latestHeartbeats.get(client).isBefore(now.minus(15, ChronoUnit.SECONDS)))
-                latestHeartbeats.remove(client);
+        for (UUID clientId : new HashSet<>(latestHeartbeats.keySet()))
+            if (latestHeartbeats.get(clientId).isBefore(now.minus(15, ChronoUnit.SECONDS)))
+                latestHeartbeats.remove(clientId);
 
-        UUID client = UUID.randomUUID();
+        UUID clientId = UUID.randomUUID();
         boolean isMaster = latestHeartbeats.isEmpty();
-        latestHeartbeats.put(client, now);
+        latestHeartbeats.put(clientId, now);
 
         LOGGER.info("Clients: {}", latestHeartbeats);
         if (latestHeartbeats.size() >= currConfig.numClients)
-            consensus = new Consensus(UUID.randomUUID(), latestHeartbeats.keySet(), now.plus(5, ChronoUnit.SECONDS).toEpochMilli());
+            consensus = new Consensus(UUID.randomUUID(), now.plus(5, ChronoUnit.SECONDS).toEpochMilli());
         else
             consensus = null;
 
-        return new ReadyResponse(currConfig.musescoreUrl, client, isMaster);
+        return new ReadyResponse(currConfig.musescoreUrl, clientId, isMaster);
     }
 
     @Override
-    public synchronized Consensus pingConsensus(UUID client) {
-        latestHeartbeats.put(client, Instant.now());
+    public synchronized Consensus pingConsensus(UUID clientId) {
+        latestHeartbeats.put(clientId, Instant.now());
         return consensus;
     }
 
@@ -71,12 +71,12 @@ public class Resource implements Service {
     }
 
     @Override
-    public synchronized void uploadAudio(UUID recordingId, UUID client, InputStream audio) throws Exception {
-        upload(recordingId, client, audio, ".m4a");
+    public synchronized void uploadAudio(UUID recordingId, UUID clientId, InputStream audio) throws Exception {
+        upload(recordingId, clientId, audio, ".m4a");
     }
 
-    private void upload(UUID recordingId, UUID client, InputStream data, String extension) throws Exception {
-        File newFile = Paths.get("data", recordingId.toString(), client + extension).toFile();
+    private void upload(UUID recordingId, UUID clientId, InputStream data, String extension) throws Exception {
+        File newFile = Paths.get("data", recordingId.toString(), clientId + extension).toFile();
         FileUtils.copyInputStreamToFile(data, newFile);
 
         File tempFile = new File(newFile.getParentFile(), "temp.m4a");

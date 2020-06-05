@@ -1,7 +1,6 @@
 package io.github.kevinychen.qorona;
 
 import java.io.InputStream;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.ws.rs.Consumes;
@@ -33,9 +32,9 @@ public interface Service {
     ReadyResponse ready();
 
     @POST
-    @Path("/ping/{client}")
+    @Path("/ping/{clientId}")
     @Produces(MediaType.APPLICATION_JSON)
-    Consensus pingConsensus(@PathParam("client") UUID client);
+    Consensus pingConsensus(@PathParam("clientId") UUID clientId);
 
     @POST
     @Path("/ping")
@@ -43,10 +42,12 @@ public interface Service {
     DoneResponse pingDone();
 
     @POST
-    @Path("/upload/audio/{recordingId}/{client}")
+    @Path("/upload/audio/{recordingId}/{clientId}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    void uploadAudio(@PathParam("recordingId") UUID recordingId, @PathParam("client") UUID client, @FormDataParam("file") final InputStream audio)
-            throws Exception;
+    void uploadAudio(
+            @PathParam("recordingId") UUID recordingId,
+            @PathParam("clientId") UUID clientId,
+            @FormDataParam("file") final InputStream audio) throws Exception;
 
     @Data
     public static class Config {
@@ -59,7 +60,7 @@ public interface Service {
     public static class ReadyResponse {
 
         final String musescoreUrl;
-        final UUID client;
+        final UUID clientId;
         final boolean master;
     }
 
@@ -67,7 +68,6 @@ public interface Service {
     public static class Consensus {
 
         final UUID recordingId;
-        final Set<UUID> clients;
         final long timestampEpochMillis;
     }
 

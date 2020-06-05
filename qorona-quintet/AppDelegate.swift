@@ -19,7 +19,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     var ntpClient: TrueTimeClient!
     var musescoreUrl: String!
-    var client: String!
+    var clientId: String!
     var isMaster: Bool!
     var recorder: Recorder!
     var recordingId: String!
@@ -31,7 +31,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         postUrl(url: SERVER + "/api/ready") { json in
             let readyResponse = json as! [String: Any]
             self.musescoreUrl = readyResponse["musescoreUrl"] as? String
-            self.client = readyResponse["client"] as? String
+            self.clientId = readyResponse["clientId"] as? String
             self.isMaster = readyResponse["master"] as? Bool
             self.prepare()
         }
@@ -44,7 +44,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func waitForConsensus() {
-        postUrl(url: SERVER + "/api/ping/\(client!)") { json in
+        postUrl(url: SERVER + "/api/ping/\(clientId!)") { json in
             if (json == nil) {
                 print("No consensus. Polling again after 1 second.")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
@@ -99,7 +99,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         recorder.stop()
         toggleZoomRecordIfMaster()
         exitChromeFullscreen()
-        uploadFile(url: SERVER + "/api/upload/audio/\(recordingId!)/\(client!)", fileUrl: recorder.url(), contentType: "audio/mp4") { () in
+        uploadFile(url: SERVER + "/api/upload/audio/\(recordingId!)/\(clientId!)", fileUrl: recorder.url(), contentType: "audio/mp4") { () in
             NSApplication.shared.terminate(self)
         }
     }
