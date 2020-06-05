@@ -11,6 +11,8 @@ import io.dropwizard.setup.Environment;
 public class Server extends Application<Configuration> {
 
     public static void main(String[] args) throws Exception {
+        System.setProperty("dw.server.applicationConnectors[0].port", "8100");
+        System.setProperty("dw.server.adminConnectors[0].port", "8101");
         new Server().run("server");
     }
 

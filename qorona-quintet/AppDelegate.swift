@@ -10,7 +10,7 @@ import Cocoa
 import os.log
 import TrueTime
 
-let SERVER = "http://localhost:8080"
+let SERVER = "http://localhost:8100"
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {

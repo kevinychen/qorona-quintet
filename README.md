@@ -13,6 +13,26 @@ QQASR consists of a server and multiple client MacOSX applications. Here's what 
 - Once the host signals that the soundtrack is over, all clients finish their recordings and send them to the server
 - The server merges the recordings together!
 
+Detailed instructions
+=====================
+
+First time setup:
+
+- All clients should allow JavaScript events from AppleScript in Google Chrome. Under View -> Developer, select "Allow JavaScript from Apple Events".
+- All clients should run the application once to (1) grant Applescript access, (2) grant microphone access, and (3) grant Accessibility access. The last option needs to be selected in System Preferences -> Security & Privacy -> Accessibility.
+
+To run:
+
+- Master client goes to `https://server:8100` and inputs the URL of the MuseScore piece and the number of clients (including the master)
+- Master client should ensure Zoom is running and in Gallery View.
+- Master client should ensure they have record permissions from the Zoom meeting host.
+- All clients should ensure Google Chrome is running.
+- Master client starts the application first.
+- All other clients also start the application.
+- After the soundtrack finishes, master client should hit "Done" in the UI.
+- Master client leaves the Zoom meeting in order to convert the video recording.
+- Master client uploads the video recording in the UI.
+
 Development
 ===========
 
