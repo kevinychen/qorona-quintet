@@ -10,15 +10,33 @@
 		84019C25248A0544001DD273 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84019C24248A0544001DD273 /* Utils.swift */; };
 		84019C27248A066C001DD273 /* Applescripts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84019C26248A066C001DD273 /* Applescripts.swift */; };
 		84019C29248A0A06001DD273 /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84019C28248A0A06001DD273 /* Recorder.swift */; };
+		84019C2C248A13E6001DD273 /* TrueTime.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84019C2B248A13E6001DD273 /* TrueTime.framework */; };
+		84019C2D248A178D001DD273 /* TrueTime.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84019C2B248A13E6001DD273 /* TrueTime.framework */; };
+		84019C2E248A178D001DD273 /* TrueTime.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 84019C2B248A13E6001DD273 /* TrueTime.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		849034EA2484615200AEB52A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849034E92484615200AEB52A /* AppDelegate.swift */; };
 		849034EC2484615200AEB52A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 849034EB2484615200AEB52A /* Assets.xcassets */; };
 		849034EF2484615200AEB52A /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 849034ED2484615200AEB52A /* MainMenu.xib */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		84019C2F248A178D001DD273 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				84019C2E248A178D001DD273 /* TrueTime.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		84019C24248A0544001DD273 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		84019C26248A066C001DD273 /* Applescripts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Applescripts.swift; sourceTree = "<group>"; };
 		84019C28248A0A06001DD273 /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
+		84019C2B248A13E6001DD273 /* TrueTime.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TrueTime.framework; path = Carthage/Build/Mac/TrueTime.framework; sourceTree = "<group>"; };
 		849034E62484615200AEB52A /* qorona-quintet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "qorona-quintet.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		849034E92484615200AEB52A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		849034EB2484615200AEB52A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -32,17 +50,28 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				84019C2C248A13E6001DD273 /* TrueTime.framework in Frameworks */,
+				84019C2D248A178D001DD273 /* TrueTime.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		84019C2A248A13E5001DD273 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				84019C2B248A13E6001DD273 /* TrueTime.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		849034DD2484615200AEB52A = {
 			isa = PBXGroup;
 			children = (
 				849034E82484615200AEB52A /* qorona-quintet */,
 				849034E72484615200AEB52A /* Products */,
+				84019C2A248A13E5001DD273 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -79,6 +108,7 @@
 				849034E22484615200AEB52A /* Sources */,
 				849034E32484615200AEB52A /* Frameworks */,
 				849034E42484615200AEB52A /* Resources */,
+				84019C2F248A178D001DD273 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -283,6 +313,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = D7QWX28KQQ;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				INFOPLIST_FILE = "qorona-quintet/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -302,6 +336,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = D7QWX28KQQ;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				INFOPLIST_FILE = "qorona-quintet/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

@@ -8,6 +8,7 @@
 
 import Cocoa
 import os.log
+import TrueTime
 
 let SERVER = "http://localhost:8080"
 
@@ -16,6 +17,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     @IBOutlet weak var window: NSWindow!
     
+    var ntpClient: TrueTimeClient!
     var musescoreUrl: String!
     var client: String!
     var isMaster: Bool!
@@ -23,6 +25,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var recordingId: String!
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+        ntpClient = TrueTimeClient.sharedInstance
+        ntpClient.start()
+        
         postUrl(url: SERVER + "/api/ready") { json in
             let readyResponse = json as! [String: Any]
             self.musescoreUrl = readyResponse["musescoreUrl"] as? String
@@ -34,7 +39,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func prepare() {
         openChromeMusescoreInFullscreen(musescoreUrl: musescoreUrl)
-        self.recorder = Recorder()
+        recorder = Recorder()
         waitForConsensus()
     }
     
@@ -49,10 +54,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
             let consensus = json as! [String: Any]
             self.recordingId = consensus["recordingId"] as? String
+            
             let timestampEpochMillis = consensus["timestampEpochMillis"] as! Int64
-            print("Got consensus at \(timestampEpochMillis)")
-            // TODO wait until timestampEpochMillis
-            self.run()
+            let currentEpochMillis = Int64(((self.ntpClient.referenceTime?.now().timeIntervalSince1970)! * 1000.0).rounded())
+            let waitMillis = Int(timestampEpochMillis - currentEpochMillis)
+            print("Current time: \(currentEpochMillis). Consensus time: \(timestampEpochMillis). Wait time: \(waitMillis)")
+            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(waitMillis)) {
+                self.run()
+            }
         }
     }
     

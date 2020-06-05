@@ -13,3 +13,19 @@ QQASR consists of a server and multiple client MacOSX applications. Here's what 
 - Once the host signals that the soundtrack is over, all clients finish their recordings and send them to the server
 - The server merges the recordings together!
 
+Development
+===========
+
+First time setup:
+
+    brew install carthage  # Swift dependency manager
+    carthage bootstrap
+    cd qorona-quintet-server && ./gradlew eclipse  # Server classpath
+
+To start the server, either run `Server.java` in Eclipse, or:
+
+    cd qorona-quintet-server
+    ./gradlew run
+
+The client can be built and run in XCode. Alternatively, export the client application in XCode by clicking Product -> Archive -> Distribute App -> Development.
+
