@@ -78,12 +78,12 @@ public class Resource implements Service {
 
     @Override
     public synchronized void uploadAudio(UUID clientId, InputStream audio) throws Exception {
-        upload(clientId.toString(), audio, ".m4a");
+        uploadAndMerge(clientId.toString(), audio, ".m4a");
     }
 
     @Override
     public synchronized Response uploadVideo(InputStream video) throws Exception {
-        upload("zoom", video, ".mp4");
+        uploadAndMerge("zoom", video, ".mp4");
         return Response.seeOther(new URI("/recording.html#" + recordingId))
                 .build();
     }
@@ -94,7 +94,7 @@ public class Resource implements Service {
                 .build();
     }
 
-    private void upload(String clientId, InputStream data, String extension) throws Exception {
+    private void uploadAndMerge(String clientId, InputStream data, String extension) throws Exception {
         File newFile = Paths.get("data", recordingId.toString(), clientId + extension).toFile();
         FileUtils.copyInputStreamToFile(data, newFile);
 

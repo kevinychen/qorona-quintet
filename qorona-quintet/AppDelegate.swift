@@ -10,7 +10,7 @@ import Cocoa
 import os.log
 import TrueTime
 
-let SERVER = "http://localhost:8100"
+let SERVER = Bundle.main.infoDictionary?["SERVER"] as! String
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {

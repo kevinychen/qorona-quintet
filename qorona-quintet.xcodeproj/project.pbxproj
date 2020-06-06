@@ -324,6 +324,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "io.github.kevinychen.qorona-quintet";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SERVER = "http://localhost:8100";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -347,6 +348,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "io.github.kevinychen.qorona-quintet";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SERVER = "http://util.in:8100";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
