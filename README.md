@@ -1,5 +1,5 @@
 Qorona-Quintet Automated Synchronized Recorder (QQASR)
-------------------------------------------------------
+======================================================
 
 QQASR (pronounced "quasar") allows remote users to simultaneously play and record music to a synchronized MuseScore soundtrack, and combines the recordings into a single file.
 
@@ -14,7 +14,7 @@ QQASR consists of a server and multiple client MacOSX applications. Here's what 
 - The server merges the recordings together!
 
 Detailed instructions
-=====================
+---------------------
 
 First time setup:
 
@@ -34,7 +34,7 @@ To run:
 - Master client uploads the video recording in the UI.
 
 Development
-===========
+-----------
 
 First time setup:
 

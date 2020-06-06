@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.util.UUID;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -45,13 +46,17 @@ public interface Service {
     @POST
     @Path("/upload/audio/{clientId}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    void uploadAudio(@PathParam("clientId") UUID clientId, @FormDataParam("file") final InputStream audio) throws Exception;
+    void uploadAudio(@PathParam("clientId") UUID clientId, @FormDataParam("file") InputStream audio) throws Exception;
 
     @POST
     @Path("/upload/video")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces(MediaType.TEXT_HTML)
-    Response uploadVideo(@FormDataParam("file") final InputStream audio) throws Exception;
+    Response uploadVideo(@FormDataParam("file") InputStream audio) throws Exception;
+
+    @GET
+    @Path("/recording/{recordingId}")
+    @Produces("video/mp4")
+    Response downloadVideo(@PathParam("recordingId") String recordingId) throws Exception;
 
     @Data
     public static class Config {
