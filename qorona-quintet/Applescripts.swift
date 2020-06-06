@@ -90,11 +90,16 @@ end tell
 
 func exitChromeFullscreen() {
     try! runApplescript(source: """
-# escape to exit fullscreen
 tell application "Google Chrome"
     activate
+
+    # if still playing, click stop
+    tell active tab of window 1
+        execute javascript "if (document.querySelectorAll('._13vRI._1ci-r._3qfU_._3ysVT._1Us9e.Hj1bK._8B-BO._15kzJ')[1].getElementsByTagName('path').length === 2) { document.querySelectorAll('._13vRI._1ci-r._3qfU_._3ysVT._1Us9e.Hj1bK._8B-BO._15kzJ')[1].click(); }"
+    end tell
 end tell
 
+# click escape to exit fullscreen
 tell application "System Events" to key code 53
 """
     )
