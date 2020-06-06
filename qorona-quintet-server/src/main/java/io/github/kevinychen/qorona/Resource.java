@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -90,8 +91,8 @@ public class Resource implements Service {
 
     @Override
     public synchronized Response downloadVideo(String recordingId) throws Exception {
-        return Response.ok(java.nio.file.Files.readAllBytes(Paths.get("data", recordingId, "merged_video.mp4")))
-                .build();
+        return Response.ok((StreamingOutput) output -> Files.copy(Paths.get("data", recordingId, "merged_video.mp4").toFile(), output))
+            .build();
     }
 
     private void uploadAndMerge(String clientId, InputStream data, String extension) throws Exception {
