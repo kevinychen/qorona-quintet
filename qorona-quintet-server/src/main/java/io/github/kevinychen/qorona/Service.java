@@ -25,8 +25,8 @@ public interface Service {
     void setConfig(Config config);
 
     @POST
-    @Path("/done")
-    void setDone();
+    @Path("/done/{done}")
+    void setDone(@PathParam("done") boolean done);
 
     @POST
     @Path("/ready")

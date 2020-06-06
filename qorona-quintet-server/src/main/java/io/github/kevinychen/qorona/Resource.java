@@ -41,8 +41,8 @@ public class Resource implements Service {
     }
 
     @Override
-    public synchronized void setDone() {
-        done = true;
+    public synchronized void setDone(boolean done) {
+        this.done = done;
     }
 
     @Override
@@ -91,6 +91,7 @@ public class Resource implements Service {
 
     @Override
     public synchronized Response downloadVideo(String recordingId) throws Exception {
+        // https://stackoverflow.com/questions/24716357/jersey-client-to-download-and-save-file
         return Response.ok((StreamingOutput) output -> Files.copy(Paths.get("data", recordingId, "merged_video.mp4").toFile(), output))
             .build();
     }

@@ -50,7 +50,7 @@
       };
       document.getElementById('submit-done').onclick = function() {
         document.getElementById('submit-done').value = 'Updating...';
-        fetch('/api/done', {
+        fetch('/api/done/true', {
           method: 'POST',
         }).then(response => {
           document.getElementById('submit-done').value = 'Done';
