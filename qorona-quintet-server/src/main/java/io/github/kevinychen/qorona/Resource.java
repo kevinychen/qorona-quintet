@@ -22,6 +22,7 @@ import com.google.common.io.Files;
 public class Resource implements Service {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Resource.class);
+    private static final String[] ENVP = new String[] { "PATH=/usr/local/bin:/usr/bin" };
 
     private volatile Config currConfig = new Config();
     private volatile String recordingId = UUID.randomUUID().toString();
@@ -113,9 +114,9 @@ public class Resource implements Service {
                             "/bin/sh",
                             "-c",
                             // https://stackoverflow.com/questions/14498539/how-to-overlay-downmix-two-audio-files-using-ffmpeg
-                            String.format("yes | /usr/local/bin/ffmpeg -i %s -i %s -filter_complex amerge=inputs=2 -ac 2 %s",
+                            String.format("yes | ffmpeg -i %s -i %s -filter_complex amerge=inputs=2 -ac 2 %s",
                                 tempFile.getAbsolutePath(), file.getAbsolutePath(), mergedAudioFile.getAbsolutePath()),
-                    }).waitFor();
+                    }, ENVP).waitFor();
                     if (statusCode != 0)
                         throw new IllegalStateException("ffmpeg threw error code " + statusCode);
                 }
@@ -127,9 +128,9 @@ public class Resource implements Service {
                         "/bin/sh",
                         "-c",
                         // https://video.stackexchange.com/questions/11898/merge-mp4-with-m4a
-                        String.format("yes | /usr/local/bin/ffmpeg -i %s -i %s -c:v copy -map 0:v:0 -map 1:a:0 %s",
+                        String.format("yes | ffmpeg -i %s -i %s -c:v copy -map 0:v:0 -map 1:a:0 %s",
                             file.getAbsolutePath(), mergedAudioFile.getAbsolutePath(), mergedVideoFile.getAbsolutePath()),
-                }).waitFor();
+                }, ENVP).waitFor();
                 if (statusCode != 0)
                     throw new IllegalStateException("ffmpeg threw error code " + statusCode);
             }
