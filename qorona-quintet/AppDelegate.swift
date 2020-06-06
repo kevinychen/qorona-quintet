@@ -22,7 +22,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var clientId: String!
     var isMaster: Bool!
     var recorder: Recorder!
-    var recordingId: String!
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         ntpClient = TrueTimeClient.sharedInstance
@@ -53,8 +52,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 return
             }
             let consensus = json as! [String: Any]
-            self.recordingId = consensus["recordingId"] as? String
-            
             let startTimeEpochMillis = consensus["startTimeEpochMillis"] as! Int64
             let currentEpochMillis = Int64(((self.ntpClient.referenceTime?.now().timeIntervalSince1970)! * 1000.0).rounded())
             let waitMillis = Int(startTimeEpochMillis - currentEpochMillis)
@@ -99,7 +96,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         recorder.stop()
         toggleZoomRecordIfMaster()
         exitChromeFullscreen()
-        uploadFile(url: SERVER + "/api/upload/audio/\(recordingId!)/\(clientId!)", fileUrl: recorder.url(), contentType: "audio/mp4") { () in
+        uploadFile(url: SERVER + "/api/upload/audio/\(clientId!)", fileUrl: recorder.url(), contentType: "audio/mp4") { () in
             NSApplication.shared.terminate(self)
         }
     }
