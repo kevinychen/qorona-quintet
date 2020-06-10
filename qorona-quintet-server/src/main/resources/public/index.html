@@ -50,8 +50,14 @@
       };
       document.getElementById('submit-done').onclick = function() {
         document.getElementById('submit-done').value = 'Updating...';
-        fetch('/api/done/true', {
+        fetch('/api/config', {
           method: 'POST',
+          body: JSON.stringify({
+            numClients: parseInt(document.getElementById('input-num-clients').value),
+            musescoreUrl: document.getElementById('input-url').value,
+            done: true,
+          }),
+          headers: { 'Content-type': 'application/json' },
         }).then(response => {
           document.getElementById('submit-done').value = 'Done';
         });

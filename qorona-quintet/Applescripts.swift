@@ -10,25 +10,20 @@ func openChromeMusescoreInFullscreen(musescoreUrl: String) {
     try! runApplescript(source: """
 tell application "Google Chrome"
     activate
+
     tell window 1
+        # open URL
         set newTab to make new tab with properties {URL:"{{musescoreUrl}}"}
+
+        delay 3
     end tell
-end tell
-
-tell me
-    activate
-    display dialog "Clicking play and then stop to force-download the music..." giving up after 2
-end tell
-
-tell application "Google Chrome"
-    activate
 
     tell newTab
         # play
         execute javascript "document.querySelectorAll('._13vRI._1ci-r._3qfU_._3ysVT._1Us9e.Hj1bK._8B-BO._15kzJ')[1].click()"
     end tell
 
-    delay 2
+    delay 3
 
     tell newTab
         # pause
@@ -45,8 +40,6 @@ end tell
 # invoke fullscreen
 tell application "System Events"
     keystroke "~"
-
-    delay 2
 end tell
 """
         .replacingOccurrences(of: "{{musescoreUrl}}", with: musescoreUrl)

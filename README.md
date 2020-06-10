@@ -19,7 +19,7 @@ Detailed instructions
 First time setup:
 
 - All clients should allow JavaScript events from AppleScript in Google Chrome. Under View -> Developer, select "Allow JavaScript from Apple Events".
-- All clients should run the application once to (1) grant Applescript access, (2) grant microphone access, and (3) grant Accessibility access. The last option needs to be selected in System Preferences -> Security & Privacy -> Accessibility.
+- All clients should run the application once to (1) grant Microphone access (to record music), (2) grant Accessibility access (open music in Chrome), and (3) grant Automation access (to enable Chrome fullscreen). These will automatically be requested the first time you run the app. If you accidentally clicked "Don't Allow", you can fix it in System Preferences -> Security & Privacy -> Microphone/Accessibility/Automation.
 
 To run:
 

@@ -19,15 +19,11 @@ func runApplescript(source: String) throws {
     }
 }
 
-func postUrl(url: String, callback: @escaping (Any?) -> ()) {
+func httpCall(url: String, method: String, callback: @escaping (Any?) -> ()) {
     var request = URLRequest(url: URL(string: url)!)
-    request.httpMethod = "POST"
+    request.httpMethod = method
     
     let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
-        if data!.isEmpty {
-            callback(nil)
-            return
-        }
         let json = try! JSONSerialization.jsonObject(with: data!, options: [])
         callback(json)
     }

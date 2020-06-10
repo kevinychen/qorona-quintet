@@ -19,29 +19,20 @@ import lombok.Data;
 @Path("/")
 public interface Service {
 
+    @GET
+    @Path("/config")
+    @Produces(MediaType.APPLICATION_JSON)
+    Config getConfig();
+
     @POST
     @Path("/config")
     @Consumes(MediaType.APPLICATION_JSON)
     void setConfig(Config config);
 
     @POST
-    @Path("/done/{done}")
-    void setDone(@PathParam("done") boolean done);
-
-    @POST
-    @Path("/ready")
-    @Produces(MediaType.APPLICATION_JSON)
-    ReadyResponse ready();
-
-    @POST
-    @Path("/ping/{clientId}")
+    @Path("/consensus/{clientId}")
     @Produces(MediaType.APPLICATION_JSON)
     Consensus pingConsensus(@PathParam("clientId") String clientId);
-
-    @POST
-    @Path("/ping")
-    @Produces(MediaType.APPLICATION_JSON)
-    DoneResponse pingDone();
 
     @POST
     @Path("/upload/audio/{clientId}")
@@ -63,25 +54,13 @@ public interface Service {
 
         int numClients = 2;
         String musescoreUrl = "https://musescore.com/user/31796599/scores/5560182";
-    }
-
-    @Data
-    public static class ReadyResponse {
-
-        final String musescoreUrl;
-        final String clientId;
-        final boolean master;
+        boolean done = false;
     }
 
     @Data
     public static class Consensus {
 
         final long startTimeEpochMillis;
-    }
-
-    @Data
-    public static class DoneResponse {
-
-        final boolean done;
+        final boolean master;
     }
 }

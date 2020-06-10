@@ -27,54 +27,44 @@ public class Resource implements Service {
 
     private volatile Config currConfig = new Config();
     private volatile String recordingId = UUID.randomUUID().toString();
-    private volatile boolean done;
-    private volatile Consensus consensus;
     private Map<String, Instant> latestHeartbeats = new HashMap<>();
+    private volatile String masterClientId;
+    private volatile long startTimeEpochMillis;
+
+    @Override
+    public synchronized Config getConfig() {
+        return currConfig;
+    }
 
     @Override
     public synchronized void setConfig(Config config) {
-        LOGGER.info("Updating config: {}", config);
         currConfig = config;
         recordingId = UUID.randomUUID().toString();
-        done = false;
         latestHeartbeats.clear();
-    }
-
-    @Override
-    public synchronized void setDone(boolean done) {
-        this.done = done;
-    }
-
-    @Override
-    public synchronized ReadyResponse ready() {
-        Instant now = Instant.now();
-
-        for (String clientId : new HashSet<>(latestHeartbeats.keySet()))
-            if (latestHeartbeats.get(clientId).isBefore(now.minus(15, ChronoUnit.SECONDS)))
-                latestHeartbeats.remove(clientId);
-
-        String clientId = UUID.randomUUID().toString();
-        boolean isMaster = latestHeartbeats.isEmpty();
-        latestHeartbeats.put(clientId, now);
-
-        LOGGER.info("Clients: {}", latestHeartbeats);
-        if (latestHeartbeats.size() >= currConfig.numClients)
-            consensus = new Consensus(now.plus(5, ChronoUnit.SECONDS).toEpochMilli());
-        else
-            consensus = null;
-
-        return new ReadyResponse(currConfig.musescoreUrl, clientId, isMaster);
+        masterClientId = null;
+        LOGGER.info("Updating config: {}, recordingId: {}", config, recordingId);
     }
 
     @Override
     public synchronized Consensus pingConsensus(String clientId) {
-        latestHeartbeats.put(clientId, Instant.now());
-        return consensus;
-    }
+        if (masterClientId == null)
+            masterClientId = clientId;
 
-    @Override
-    public synchronized DoneResponse pingDone() {
-        return new DoneResponse(done);
+        Instant now = Instant.now();
+
+        for (String key : new HashSet<>(latestHeartbeats.keySet()))
+            if (latestHeartbeats.get(key).isBefore(now.minus(15, ChronoUnit.SECONDS)))
+                latestHeartbeats.remove(key);
+
+        latestHeartbeats.put(clientId, now);
+        LOGGER.info("Clients: {}", latestHeartbeats);
+
+        if (startTimeEpochMillis == -1 && latestHeartbeats.size() >= currConfig.numClients)
+            startTimeEpochMillis = now.plus(3, ChronoUnit.SECONDS).toEpochMilli();
+        else
+            startTimeEpochMillis = -1;
+
+        return new Consensus(startTimeEpochMillis, masterClientId.equals(clientId));
     }
 
     @Override

@@ -17,42 +17,37 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     @IBOutlet weak var window: NSWindow!
     
+    var clientId: UUID!
     var ntpClient: TrueTimeClient!
-    var musescoreUrl: String!
-    var clientId: String!
-    var isMaster: Bool!
     var recorder: Recorder!
+    var isMaster: Bool!
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+        clientId = UUID()
         ntpClient = TrueTimeClient.sharedInstance
         ntpClient.start()
+        recorder = Recorder()
         
-        postUrl(url: SERVER + "/api/ready") { json in
-            let readyResponse = json as! [String: Any]
-            self.musescoreUrl = readyResponse["musescoreUrl"] as? String
-            self.clientId = readyResponse["clientId"] as? String
-            self.isMaster = readyResponse["master"] as? Bool
-            self.prepare()
+        httpCall(url: "\(SERVER)/api/config", method: "GET") { json in
+            let config = json as! [String: Any]
+            let musescoreUrl = config["musescoreUrl"] as! String
+            openChromeMusescoreInFullscreen(musescoreUrl: musescoreUrl)
+            self.waitForConsensus()
         }
     }
     
-    func prepare() {
-        openChromeMusescoreInFullscreen(musescoreUrl: musescoreUrl)
-        recorder = Recorder()
-        waitForConsensus()
-    }
-    
     func waitForConsensus() {
-        postUrl(url: SERVER + "/api/ping/\(clientId!)") { json in
-            if (json == nil) {
+        httpCall(url: "\(SERVER)/api/consensus/\(clientId!)", method: "POST") { json in
+            let consensus = json as! [String: Any]
+            self.isMaster = consensus["master"] as? Bool
+            let startTimeEpochMillis = consensus["startTimeEpochMillis"] as! Int64
+            if startTimeEpochMillis == -1 {
                 print("No consensus. Polling again after 1 second.")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                     self.waitForConsensus()
                 }
                 return
             }
-            let consensus = json as! [String: Any]
-            let startTimeEpochMillis = consensus["startTimeEpochMillis"] as! Int64
             let currentEpochMillis = Int64(((self.ntpClient.referenceTime?.now().timeIntervalSince1970)! * 1000.0).rounded())
             let waitMillis = Int(startTimeEpochMillis - currentEpochMillis)
             print("Current time: \(currentEpochMillis). Start time: \(startTimeEpochMillis). Wait time: \(waitMillis)")
@@ -70,17 +65,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         recorder.record()
 
         print("Starting countdown at \(CACurrentMediaTime())")
-        doChromeCountdownAndPlay(countdown: 4, delayMillis: 1000)
+        doChromeCountdownAndPlay(countdown: 11, delayMillis: 1000)
         print("Started MuseScore at \(CACurrentMediaTime())")
         
         waitForDone()
     }
     
     func waitForDone() {
-        postUrl(url: SERVER + "/api/ping/") { json in
-            let doneResponse = json as! [String: Bool]
-            let done = doneResponse["done"]!
-            if !done {
+        httpCall(url: "\(SERVER)/api/config/", method: "GET") { json in
+            let config = json as! [String: Any]
+            let isDone = config["done"] as! Bool
+            if !isDone {
                 print("Not done yet. Polling again after 1 second.")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                     self.waitForDone()
@@ -96,7 +91,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         recorder.stop()
         toggleZoomRecordIfMaster()
         exitChromeFullscreen()
-        uploadFile(url: SERVER + "/api/upload/audio/\(clientId!)", fileUrl: recorder.url(), contentType: "audio/mp4") { () in
+        uploadFile(url: "\(SERVER)/api/upload/audio/\(clientId!)", fileUrl: recorder.url(), contentType: "audio/mp4") { () in
             NSApplication.shared.terminate(self)
         }
     }
@@ -105,7 +100,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if (isMaster) {
             toggleZoomRecord()
         } else {
-            sleep(100) // dummy delay that takes roughly the same amount of time
+            usleep(100000) // dummy delay that takes roughly the same amount of time; 100,000us = 100ms
         }
     }
 
