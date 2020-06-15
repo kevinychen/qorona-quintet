@@ -10,8 +10,6 @@
 		84019C25248A0544001DD273 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84019C24248A0544001DD273 /* Utils.swift */; };
 		84019C27248A066C001DD273 /* Applescripts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84019C26248A066C001DD273 /* Applescripts.swift */; };
 		84019C29248A0A06001DD273 /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84019C28248A0A06001DD273 /* Recorder.swift */; };
-		84019C2C248A13E6001DD273 /* TrueTime.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84019C2B248A13E6001DD273 /* TrueTime.framework */; };
-		84019C2D248A178D001DD273 /* TrueTime.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84019C2B248A13E6001DD273 /* TrueTime.framework */; };
 		84019C2E248A178D001DD273 /* TrueTime.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 84019C2B248A13E6001DD273 /* TrueTime.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		849034EA2484615200AEB52A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849034E92484615200AEB52A /* AppDelegate.swift */; };
 		849034EC2484615200AEB52A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 849034EB2484615200AEB52A /* Assets.xcassets */; };
@@ -50,8 +48,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84019C2C248A13E6001DD273 /* TrueTime.framework in Frameworks */,
-				84019C2D248A178D001DD273 /* TrueTime.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
